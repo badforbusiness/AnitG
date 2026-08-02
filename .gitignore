@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+.venv/
+venv/
+env/
+
+# FITS / Astrophotography data files - never commit these
+*.fit
+*.fits
+*.xisf
+*.cr2
+*.nef
+*.raf
+*.raw
+*.tif
+*.tiff
+
+# Siril working files
+*.seq
+*.ssf
+*.log
+
+# GraXpert output
+*_GraXpert.fits
+*_GraXpert.fit
+
+# Debug/temp scripts
+debug_test.sh
+test_picker.py
+graxpert.zip
+graxpert_temp/
+
+# Docker build cache
+.dockerignore
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
