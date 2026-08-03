@@ -17,10 +17,15 @@ Write-Host "====================================================="
 Write-Host "   GCP Cloud Run Astrophotography Pipeline Launcher  "
 Write-Host "====================================================="
 
-# Check if gcloud CLI is installed
+# Check if gcloud CLI is installed (auto-append local install path if missing from session PATH)
 if (-not (Get-Command "gcloud" -ErrorAction SilentlyContinue)) {
-    Write-Error "Google Cloud SDK (gcloud CLI) is not installed or not in PATH. Please install gcloud CLI first."
-    exit 1
+    $sdkBin = "$env:LocalAppData\Google\Cloud SDK\google-cloud-sdk\bin"
+    if (Test-Path "$sdkBin\gcloud.cmd") {
+        $env:PATH = "$sdkBin;$env:PATH"
+    } else {
+        Write-Error "Google Cloud SDK (gcloud CLI) is not installed or not in PATH. Please install gcloud CLI first."
+        exit 1
+    }
 }
 
 # Auto-detect current GCP project if not passed
