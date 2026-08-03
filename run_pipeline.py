@@ -646,13 +646,14 @@ def main():
             
             print(f"  -> Processing batch {batch_idx + 1}/{num_batches} (Frames {start + 1} to {end})...")
             
-            batch_dir = os.path.join(node_dir, f"batch_{batch_idx}")
+            scratch_root = os.path.join(tempfile.gettempdir(), "astro_scratch")
+            batch_dir = os.path.join(scratch_root, f"batch_{batch_idx}")
             batch_lights_dir = os.path.join(batch_dir, "lights")
             batch_process_dir = os.path.join(batch_dir, "process")
             
-            # Recreate batch directories
+            # Recreate batch directories in fast local temp space
             if os.path.exists(batch_dir):
-                shutil.rmtree(batch_dir)
+                shutil.rmtree(batch_dir, ignore_errors=True)
             os.makedirs(batch_lights_dir, exist_ok=True)
             os.makedirs(batch_process_dir, exist_ok=True)
             
@@ -754,10 +755,12 @@ def main():
             os.rename(sub_stacks[0], stacked_result)
         else:
             print("  -> Combining sub-stacks into a final stack for this node...")
-            final_stack_dir = os.path.join(node_dir, "final_node_stack")
+            final_stack_dir = os.path.join(tempfile.gettempdir(), "astro_scratch", "final_node_stack")
             fs_lights_dir = os.path.join(final_stack_dir, "lights")
             fs_process_dir = os.path.join(final_stack_dir, "process")
             
+            if os.path.exists(final_stack_dir):
+                shutil.rmtree(final_stack_dir, ignore_errors=True)
             os.makedirs(fs_lights_dir, exist_ok=True)
             os.makedirs(fs_process_dir, exist_ok=True)
             
@@ -893,12 +896,12 @@ def main():
         print("Only one location stacked. Skipping final merge.")
         shutil.copy2(hdr_stacks[0], final_master_result)
     else:
-        final_dir = os.path.join(args.dest, "final_master_stack")
+        final_dir = os.path.join(tempfile.gettempdir(), "astro_scratch", "final_master_stack")
         final_lights_dir = os.path.join(final_dir, "lights")
         final_process_dir = os.path.join(final_dir, "process")
         
         if os.path.exists(final_dir):
-            shutil.rmtree(final_dir)
+            shutil.rmtree(final_dir, ignore_errors=True)
         os.makedirs(final_lights_dir, exist_ok=True)
         os.makedirs(final_process_dir, exist_ok=True)
         
