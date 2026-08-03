@@ -12,7 +12,8 @@ import numpy as np
 def get_default_paths():
     if sys.platform == "win32":
         siril = r"C:\Program Files\Siril\bin\siril-cli.exe"
-        graxpert = r"C:\Users\dazle\AppData\Local\Programs\GraXpert\GraXpert.exe"
+        local_app_data = os.environ.get("LOCALAPPDATA", "")
+        graxpert = os.path.join(local_app_data, "Programs", "GraXpert", "GraXpert.exe") if local_app_data else r"C:\Program Files\GraXpert\GraXpert.exe"
     elif sys.platform == "darwin":
         siril = "/Applications/Siril.app/Contents/MacOS/siril-cli"
         graxpert = "/Applications/GraXpert.app/Contents/MacOS/GraXpert"

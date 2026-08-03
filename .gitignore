@@ -47,6 +47,16 @@ graxpert_temp/
 Thumbs.db
 desktop.ini
 
+# Credentials, Keys, & Secrets - NEVER COMMIT
+*.json
+*.pem
+*.key
+*.p12
+credentials*
+keyfile*
+.gcp/
+.env
+
 # IDE
 .vscode/
 .idea/
