@@ -120,9 +120,8 @@ $jobArgs = @(
     "--region=$Region",
     "--project=$GcpProject",
     "--add-volume=name=gcs-vol,type=cloud-storage,bucket=$BucketName",
-    "--add-volume-mount=volume=gcs-vol,mount-path=/input,sub-path=input",
-    "--add-volume-mount=volume=gcs-vol,mount-path=/output,sub-path=output",
-    "--args=--src,/input,--dest,/output,--threads,$Threads"
+    "--add-volume-mount=volume=gcs-vol,mount-path=/mnt",
+    "--args=--src,/mnt/input,--dest,/mnt/output,--threads,$Threads"
 )
 
 if ($Clean) { $jobArgs += "--args=--clean" }
