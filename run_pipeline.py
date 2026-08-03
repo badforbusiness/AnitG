@@ -702,6 +702,7 @@ def main():
             seq_path = os.path.join(batch_process_dir, f"{seq_prefix}.seq")
             parse_and_cull(seq_path, batch_filenames, lights_dir)
             
+            feather_opt = f" -feather={args.feather_amount}" if args.mosaic else ""
             stack_opt = " -overlap_norm -maximize" if args.mosaic else ""
             siril_ver = get_siril_version(args.siril_path)
             weight_opts = " -weight=wfwhm -32b" if siril_ver >= (1, 3, 0) else ""
@@ -709,7 +710,7 @@ def main():
                 "requires 1.2.0\n"
                 f"setcpu {args.threads}\n"
                 "cd process\n"
-                f"stack {seq_prefix} rej 3 3 -norm=addscale -output_norm -rgb_equal{weight_opts} -feather={args.feather_amount}{stack_opt} -out=stacked\n"
+                f"stack {seq_prefix} rej 3 3 -norm=addscale -output_norm -rgb_equal{weight_opts}{feather_opt}{stack_opt} -out=stacked\n"
                 "load stacked\n"
                 "mirrorx -bottomup\n"
                 "save ../sub_stack\n"
@@ -929,7 +930,7 @@ def main():
                 "convert session -debayer -out=../process\n"
                 "cd ../process\n"
                 "register session_ -2pass\n"
-                f"stack r_session_ rej 3 3 -norm=addscale -output_norm -rgb_equal{weight_opts} -feather={args.feather_amount} -out=stacked\n"
+                f"stack r_session_ rej 3 3 -norm=addscale -output_norm -rgb_equal{weight_opts} -out=stacked\n"
                 "load stacked\n"
                 "mirrorx -bottomup\n"
                 "save ../../final_master_result\n"
