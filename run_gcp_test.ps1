@@ -102,9 +102,16 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host "[5/6] Creating & executing Cloud Run Job (Capped at $TaskTimeout)..."
 $jobName = "astro-stack-run"
 
+# Check if job exists
+$jobVerb = "create"
+& "$sdkBin\gcloud.cmd" run jobs describe $jobName --region=$Region --project=$GcpProject 2>$null
+if ($LASTEXITCODE -eq 0) {
+    $jobVerb = "update"
+}
+
 # Build Job Args
 $jobArgs = @(
-    "run", "jobs", "deploy", $jobName,
+    "run", "jobs", $jobVerb, $jobName,
     "--image=$RepoUrl",
     "--cpu=$Threads",
     "--memory=16Gi",
