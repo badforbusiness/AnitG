@@ -104,16 +104,23 @@ powershell -ExecutionPolicy Bypass -File .\run_docker.ps1 -Check
 | `--clean` | off | Wipe destination before running |
 | `--check` | off | Pre-flight dependency check only |
 
-## GCP Deployment
+## GCP Deployment (Cloud Run Jobs)
 
-To run on Google Cloud Platform, build and push the image to Artifact Registry, then run on a Compute Engine instance or Cloud Run job:
+An automated script `run_gcp_test.ps1` handles the full GCP Cloud Run workflow with built-in **budget safeguards** (hard 20-minute execution cap, serverless pay-per-second billing, and automatic output download):
 
-```bash
-docker build -t gcr.io/YOUR_PROJECT/astro-pipeline .
-docker push gcr.io/YOUR_PROJECT/astro-pipeline
-
-gcloud run jobs create astro-pipeline \
-  --image gcr.io/YOUR_PROJECT/astro-pipeline \
-  --tasks 1 --max-retries 0 \
-  --args="--src,/input,--dest,/output,--threads,16"
+```powershell
+# Run on GCP with automated GCS upload, Cloud Run execution, and result download
+powershell -ExecutionPolicy Bypass -File .\run_gcp_test.ps1 `
+    -GcpProject "YOUR_PROJECT_ID" `
+    -Src "C:\Astrophotography\lemuncomet\lights" `
+    -Dest "C:\Astrophotography\lemuncomet\lights_sorted" `
+    -TaskTimeout "20m"
 ```
+
+### What `run_gcp_test.ps1` does automatically:
+1. **Artifact Registry Setup**: Ensures `astro-repo` Docker repository exists in your GCP region.
+2. **Container Push**: Tags & pushes your local `astro-pipeline:latest` image to GCP.
+3. **GCS Bucket Setup**: Ensures Cloud Storage bucket `gs://astro-data-PROJECT_ID` exists.
+4. **Data Upload**: Syncs raw FITS files from your local computer to `gs://.../input/`.
+5. **Serverless Execution**: Deploys & runs a **Cloud Run Job** with GCS bucket volume mounts and a **20-minute hard budget timeout cap**.
+6. **Result Download**: Automatically downloads the generated `final_master_*` FITS files directly back to your local Windows output folder.
