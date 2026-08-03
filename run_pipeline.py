@@ -4,6 +4,7 @@ import re
 import math
 import glob
 import shutil
+import tempfile
 import subprocess
 import argparse
 from astropy.io import fits
