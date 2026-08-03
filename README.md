@@ -40,8 +40,21 @@ AnitG/
 ## Usage
 
 ### Windows GUI
+Launch the graphical interface:
 ```powershell
 python gui.py
+```
+
+### Windows CLI (Direct PowerShell / CMD)
+You can run the pipeline directly from PowerShell or Command Prompt without launching the GUI. The script automatically locates `siril-cli.exe` and `GraXpert.exe` in standard Windows install locations:
+
+```powershell
+python run_pipeline.py `
+    --src "C:\Astrophotography\M31\lights" `
+    --dest "C:\Astrophotography\M31\lights_sorted" `
+    --threads 12 `
+    --batch-size 200 `
+    --mosaic
 ```
 
 ### Headless (Docker)
@@ -61,6 +74,13 @@ docker run --rm \
   -v /path/to/output:/output \
   astro-pipeline --src /input --dest /output --threads 8
 ```
+
+## Siril & GraXpert CLI Version Compatibility
+
+- **Dynamic Syntax Adaptation**: `run_pipeline.py` inspects the installed Siril version at runtime (`get_siril_version()`).
+- **Siril 1.3+ (Windows/macOS)**: Automatically utilizes advanced stacking flags such as `-weight=wfwhm` and `-32b`.
+- **Siril 1.2.x (Linux/Docker)**: Automatically adjusts command syntax to remain compatible with standard Siril 1.2.6 packages without crashing.
+- **Headless Display Handling**: On Linux/Docker, `run_pipeline.py` automatically wraps Siril CLI calls with `xvfb-run` to supply a virtual X11 display buffer, preventing GTK display errors when running without a desktop environment.
 
 ### Pre-flight check
 ```powershell

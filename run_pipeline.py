@@ -21,6 +21,23 @@ def get_default_paths():
         graxpert = shutil.which("graxpert") or "graxpert"
     return siril, graxpert
 
+def get_siril_version(siril_path):
+    """Detects installed Siril version to adjust script syntax compatibility."""
+    try:
+        cmd = [siril_path, "--version"]
+        if sys.platform.startswith("linux"):
+            cmd = ["xvfb-run", "-a"] + cmd
+        res = subprocess.run(cmd, capture_output=True, text=True)
+        out = res.stdout + res.stderr
+        match = re.search(r"siril\s+v?(\d+\.\d+\.\d+)", out, re.IGNORECASE)
+        if match:
+            v_str = match.group(1)
+            parts = [int(p) for p in v_str.split(".")]
+            return tuple(parts)
+    except Exception:
+        pass
+    return (1, 2, 0)
+
 # Offline-first location name mapping
 OFFLINE_LOCATIONS = [
     {"lat": 51.4572, "lon": -0.0697, "name": "Greater_London"},
@@ -686,11 +703,13 @@ def main():
             parse_and_cull(seq_path, batch_filenames, lights_dir)
             
             stack_opt = " -overlap_norm -maximize" if args.mosaic else ""
+            siril_ver = get_siril_version(args.siril_path)
+            weight_opts = " -weight=wfwhm -32b" if siril_ver >= (1, 3, 0) else ""
             stack_ssf = (
                 "requires 1.2.0\n"
                 f"setcpu {args.threads}\n"
                 "cd process\n"
-                f"stack {seq_prefix} rej 3 3 -norm=addscale -output_norm -rgb_equal -weight=wfwhm -32b -feather={args.feather_amount}{stack_opt} -out=stacked\n"
+                f"stack {seq_prefix} rej 3 3 -norm=addscale -output_norm -rgb_equal{weight_opts} -feather={args.feather_amount}{stack_opt} -out=stacked\n"
                 "load stacked\n"
                 "mirrorx -bottomup\n"
                 "save ../sub_stack\n"
@@ -743,6 +762,8 @@ def main():
             for idx, ss_path in enumerate(sub_stacks):
                 safe_link(ss_path, os.path.join(fs_lights_dir, f"master_{idx + 1:05d}.fit"))
                 
+            siril_ver = get_siril_version(args.siril_path)
+            weight_opts = " -weight=wfwhm -32b" if siril_ver >= (1, 3, 0) else ""
             if args.mosaic:
                 fs_ssf = (
                     "requires 1.2.0\n"
@@ -752,7 +773,7 @@ def main():
                     "cd ../process\n"
                     "register master_ -2pass -minpairs=5\n"
                     "seqapplyreg master_ -framing=max\n"
-                    f"stack r_master_ rej 3 3 -norm=addscale -output_norm -rgb_equal -weight=wfwhm -32b -feather={args.feather_amount} -overlap_norm -maximize -out=stacked\n"
+                    f"stack r_master_ rej 3 3 -norm=addscale -output_norm -rgb_equal{weight_opts} -feather={args.feather_amount} -overlap_norm -maximize -out=stacked\n"
                     "load stacked\n"
                     "mirrorx -bottomup\n"
                     "save ../../stacked_result\n"
@@ -767,7 +788,7 @@ def main():
                     "cd ../process\n"
                     "register master_ -2pass -minpairs=5\n"
                     "seqapplyreg master_\n"
-                    "stack r_master_ rej 3 3 -norm=addscale -output_norm -rgb_equal -weight=wfwhm -32b -out=stacked\n"
+                    f"stack r_master_ rej 3 3 -norm=addscale -output_norm -rgb_equal{weight_opts} -out=stacked\n"
                     "load stacked\n"
                     "mirrorx -bottomup\n"
                     "save ../../stacked_result\n"
@@ -883,6 +904,8 @@ def main():
             _, ext = os.path.splitext(ns_path)
             safe_link(ns_path, os.path.join(final_lights_dir, f"session_{idx + 1:05d}{ext}"))
             
+        siril_ver = get_siril_version(args.siril_path)
+        weight_opts = " -weight=wfwhm -32b" if siril_ver >= (1, 3, 0) else ""
         if args.mosaic:
             final_ssf = (
                 "requires 1.2.0\n"
@@ -892,7 +915,7 @@ def main():
                 "cd ../process\n"
                 "register session_ -2pass\n"
                 "seqapplyreg session_ -framing=max\n"
-                f"stack r_session_ rej 3 3 -norm=addscale -output_norm -rgb_equal -weight=wfwhm -32b -feather={args.feather_amount} -overlap_norm -maximize -out=stacked\n"
+                f"stack r_session_ rej 3 3 -norm=addscale -output_norm -rgb_equal{weight_opts} -feather={args.feather_amount} -overlap_norm -maximize -out=stacked\n"
                 "load stacked\n"
                 "mirrorx -bottomup\n"
                 "save ../../final_master_result\n"
@@ -905,8 +928,8 @@ def main():
                 "cd lights\n"
                 "convert session -debayer -out=../process\n"
                 "cd ../process\n"
-                "register session_\n"
-                f"stack r_session_ rej 3 3 -norm=addscale -output_norm -rgb_equal -weight=wfwhm -32b -feather={args.feather_amount} -out=stacked\n"
+                "register session_ -2pass\n"
+                f"stack r_session_ rej 3 3 -norm=addscale -output_norm -rgb_equal{weight_opts} -feather={args.feather_amount} -out=stacked\n"
                 "load stacked\n"
                 "mirrorx -bottomup\n"
                 "save ../../final_master_result\n"
