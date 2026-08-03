@@ -684,7 +684,8 @@ def main():
                     "cd lights\n"
                     f"convert light{convert_debayer} -out=../process\n"
                     "cd ../process\n"
-                    "register light_\n"
+                    "register light_ -2pass\n"
+                    "seqapplyreg light_\n"
                     "close\n"
                 )
             
@@ -697,7 +698,7 @@ def main():
                 continue
                 
             # --- CULLING ---
-            seq_prefix = "r_light_" if (args.mosaic or args.drizzle) else "light_"
+            seq_prefix = "r_light_"
             print("    Analyzing sequence statistics for culling...")
             seq_path = os.path.join(batch_process_dir, f"{seq_prefix}.seq")
             parse_and_cull(seq_path, batch_filenames, lights_dir)
