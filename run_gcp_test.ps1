@@ -141,14 +141,21 @@ if ($LASTEXITCODE -ne 0) {
 # -------------------------------------------------------------------
 # STEP 6: Download Output Results to Local PC
 # -------------------------------------------------------------------
-Write-Host "[6/6] Downloading finished master FITS files to $Dest..."
+Write-Host "[6/7] Downloading finished master FITS files to $Dest..."
 if (-not (Test-Path $Dest)) {
     New-Item -ItemType Directory -Force -Path $Dest | Out-Null
 }
 
 gcloud storage cp "gs://$BucketName/output/final_master_*" "$Dest\"
 
+# -------------------------------------------------------------------
+# STEP 7: Auto-Purge GCS Input Bucket to Save Storage Costs
+# -------------------------------------------------------------------
+Write-Host "[7/7] Auto-purging raw input FITS files from GCS bucket..."
+gcloud storage rm --recursive "gs://$BucketName/input/**" --quiet 2>$null
+
 Write-Host "====================================================="
-Write-Host "  SUCCESS! GCP Pipeline completed and results saved: "
+Write-Host "  SUCCESS! GCP Pipeline completed, results saved,    "
+Write-Host "  and GCS input storage auto-cleared.                "
 Write-Host "  Destination: $Dest"
 Write-Host "====================================================="
